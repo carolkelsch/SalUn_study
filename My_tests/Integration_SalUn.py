@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.optim
 import torch.utils.data
 import random
+import numpy as np
 from dataset_split import *
 
 def setup_seed(seed):
@@ -117,10 +118,12 @@ def generate_fmask(model, batch_size: int, **kwargs):
     
     print('loaded dataset...')
 
-    splitted = ds.load_dataset()
+    splitted = ds.split_dataset("class", False, forget=['cat','frog'])
+    print(list(splitted.keys()))
 
     sets = np.array(['Train','Test','Train_retain','Test_retain','Train_forget','Test_forget'])
-    if np.isin(sets, splitted.keys()).sum() != 6:
+    print(np.isin(sets, np.array(list(splitted.keys()))).sum())
+    if np.isin(sets, np.array(list(splitted.keys()))).sum() != 6:
         print(f"\033[31mNeeded datasets are not available\r\n Please pass the dictionary with the following datasets{sets}!\033[0m")
         return None
     
@@ -139,12 +142,13 @@ def generate_fmask(model, batch_size: int, **kwargs):
         shuffle=True,
     )
     
+    
     print('created loaders...')
 
-    assert len(forget_dataset) + len(retain_dataset) == len(datasets_dict['Train']), print("Sizes don't match")
+    assert len(splitted['Train_forget']) + len(splitted['Train_retain']) == len(splitted['Train']), print(f'Sizes dont match {len(splitted["Train_retain"])} {len(splitted["Train_forget"])} {len(splitted["Train"])}')
 
-    print(f"number of retain dataset {len(retain_dataset)}")
-    print(f"number of forget dataset {len(forget_dataset)}")
+    print(f"number of retain dataset {len(splitted['Train_retain'])}")
+    print(f"number of forget dataset {len(splitted['Train_forget'])}")
 
     # Validation loader is only 10 percent of the train dataset with no further
     # changes according to the forget or retain set, and is not used here
