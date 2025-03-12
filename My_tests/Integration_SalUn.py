@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import torch.optim
 import torch.utils.data
-#import unlearn
+import random
 from dataset_split import *
 
 def setup_seed(seed):
