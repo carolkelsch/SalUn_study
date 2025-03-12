@@ -114,7 +114,7 @@ def generate_fmask(model, batch_size: int, **kwargs):
     current_path = os.getcwd()
     root_dataset = current_path + '/datasets/' ## TODO: should not be hardcoded
     ds = UnlearnDatasetSplit(root_dataset, "cifar10")
-
+    
     print('loaded dataset...')
 
     splitted = ds.load_dataset()
