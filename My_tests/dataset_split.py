@@ -30,17 +30,22 @@ class UnlearnDatasetSplit:
             
 
     def save_dataset(self):
-        try:
-            for k in self.dataset_splits.keys():
+        for k in self.dataset_splits.keys():
+            try:
                 with open(f'{self.dataset_path}{k}.pkl', 'wb') as f:
                     pickle.dump(self.dataset_splits[k], f)
-        except:
-            print('could not find files!')
+            except:
+                print("Could not save dataset splits!")
+        
         
     def load_dataset(self):
 
         if len(self.dataset_splits) == 0:
-            files = [f for f in os.listdir(self.dataset_path) if f.endswith('.pkl')]
+            try:
+                files = [f for f in os.listdir(self.dataset_path) if f.endswith('.pkl')]
+            except:
+                print('could not find files!')
+                return None
             print(files)
             try:
                 for file in files:
