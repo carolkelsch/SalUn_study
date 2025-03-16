@@ -10,7 +10,7 @@ import pickle
 class UnlearnDatasetSplit:
 
     available_datasets = ["cifar-10", "coco"]
-    possible_splits = ["Train", "Test", "Train_retain", "Train_forget", "Test_retain", "Test_forget"]
+    possible_splits = ["Train", "Valid", "Test", "Train_retain", "Train_forget", "Test_retain", "Test_forget"]
 
     def __init__(self, path: str, dataset: str):
         self.dataset_path = path
@@ -26,7 +26,6 @@ class UnlearnDatasetSplit:
             if dataset != None:
                 self.get_dataset(dataset)
                 print(f'Classes: {self.classes}')
-                self.n_classes = len(self.classes)
             
 
     def save_dataset(self):
@@ -67,11 +66,21 @@ class UnlearnDatasetSplit:
 
             transform = transforms.Compose([transforms.ToTensor(),
                                             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))])
-            train = datasets.CIFAR10(self.dataset_path, train=True, transform=transform, download=True)
+            train_set = datasets.CIFAR10(self.dataset_path, train=True, transform=transform, download=True)
             test = datasets.CIFAR10(self.dataset_path, train=False, transform=transform, download=True)
 
+            val_idxs = np.random.choice(len(train), int(len(train) * 0.1), replace=False)
+            train_idxs = list(set(range(len(train))) - set(val_idxs))
+
+            valid.data = train_set.data[val_idxs]
+            valid.targets = train_set.targets[val_idxs]
+
+            train.data = train_set.data[train_idxs]
+            train.targets = train_set.targets[train_idxs]
+
             self.classes = train.classes
-            self.dataset_splits = {"Train": train, "Test": test}
+            self.n_classes = len(self.classes)
+            self.dataset_splits = {"Train": train, "Valid": valid, "Test": test}
 
         elif dataset == "coco":
             print('not implemented yet')
@@ -124,6 +133,7 @@ class UnlearnDatasetSplit:
                 
                     print(f'class is {c}')
                     trainf_mask = np.isin(np.array(self.dataset_splits["Train"].targets), c)
+                    validf_mask = np.isin(np.array(self.dataset_splits["Valid"].targets), c)
                     testf_mask = np.isin(np.array(self.dataset_splits["Test"].targets), c)
                     
                 elif isinstance(kwargs['forget'], str):
@@ -135,12 +145,14 @@ class UnlearnDatasetSplit:
                             break
 
                     trainf_mask = np.array(self.dataset_splits["Train"].targets) == c
+                    validf_mask = np.array(self.dataset_splits["Valid"].targets) == c
                     testf_mask = np.array(self.dataset_splits["Test"].targets) == c
 
                 elif isinstance(kwargs['forget'], int):
                     print('is int')
                     if kwargs['forget'] < self.n_classes:
                         trainf_mask = np.array(self.dataset_splits["Train"].targets) == kwargs['forget']
+                        validf_mask = np.array(self.dataset_splits["Valid"].targets) == kwargs['forget']
                         testf_mask = np.array(self.dataset_splits["Test"].targets) == kwargs['forget']
                     else:
                         print(f"\033[31mClass index outside of available range\r\n Please insert a valid class index!\033[0m")
@@ -151,20 +163,26 @@ class UnlearnDatasetSplit:
                     return None
 
                 train_idx = np.array(range(len(self.dataset_splits["Train"])))
+                valid_idx = np.array(range(len(self.dataset_splits["Valid"])))
                 test_idx = np.array(range(len(self.dataset_splits["Test"])))
 
                 train_f_idx = train_idx[trainf_mask]
                 train_r_idx = train_idx[~trainf_mask]
+                valid_f_idx = valid_idx[validf_mask]
+                valid_r_idx = valid_idx[~validf_mask]
                 test_f_idx = test_idx[testf_mask]
                 test_r_idx = test_idx[~testf_mask]
 
                 train_retain = Subset(self.dataset_splits["Train"], train_r_idx)
                 train_forget = Subset(self.dataset_splits["Train"], train_f_idx)
 
+                valid_retain = Subset(self.dataset_splits["Valid"], valid_r_idx)
+                valid_forget = Subset(self.dataset_splits["Valid"], valid_f_idx)
+
                 test_retain = Subset(self.dataset_splits["Test"], test_r_idx)
                 test_forget = Subset(self.dataset_splits["Test"], test_f_idx)
 
-                new_splits =  {"Train_retain": train_retain, "Train_forget": train_forget, "Test_retain": test_retain, "Test_forget": test_forget}
+                new_splits =  {"Train_retain": train_retain, "Train_forget": train_forget, "Valid_retain": valid_retain, "Valid_forget": valid_forget, "Test_retain": test_retain, "Test_forget": test_forget}
 
                 self.dataset_splits.update(new_splits)
 
