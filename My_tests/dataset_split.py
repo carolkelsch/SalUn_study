@@ -1,5 +1,3 @@
-#import numpy as np 
-#import matplotlib as plt
 import copy
 import torch
 from torchvision import datasets, transforms
@@ -20,7 +18,7 @@ class UnlearnDatasetSplit:
         self.n_classes = 0
 
         # load from path
-        self.load_dataset()
+        #self.load_dataset()
 
         # if could not find datasets in path
         if len(self.dataset_splits) == 0:
@@ -70,19 +68,31 @@ class UnlearnDatasetSplit:
             train_set = datasets.CIFAR10(self.dataset_path, train=True, transform=transform, download=True)
             test = datasets.CIFAR10(self.dataset_path, train=False, transform=transform, download=True)
 
-            val_idxs = np.random.choice(len(train_set), int(len(train_set) * 0.1), replace=False)
+            self.classes = train_set.classes
+            self.n_classes = len(self.classes)
+
+            rng = np.random.RandomState(42)
+            val_idxs = []
+
+            for i in range(self.n_classes):
+                class_idx = np.where(np.array(train_set.targets) == i)[0]
+                val_idxs.append(
+                    rng.choice(class_idx, int(0.1 * len(class_idx)), replace=False)
+                )
+            
+            val_idxs = np.hstack(val_idxs)
+
             train_idxs = list(set(range(len(train_set))) - set(val_idxs))
 
             valid = copy.deepcopy(train_set)
+            train = copy.deepcopy(train_set)
 
             valid.data = train_set.data[val_idxs]
-            valid.targets = train_set.targets[val_idxs]
+            valid.targets = np.array(train_set.targets)[val_idxs]
 
             train.data = train_set.data[train_idxs]
-            train.targets = train_set.targets[train_idxs]
-
-            self.classes = train.classes
-            self.n_classes = len(self.classes)
+            train.targets = np.array(train_set.targets)[train_idxs]
+            
             self.dataset_splits = {"Train": train, "Valid": valid, "Test": test}
 
         elif dataset == "coco":
