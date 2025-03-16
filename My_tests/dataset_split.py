@@ -1,5 +1,6 @@
 #import numpy as np 
 #import matplotlib as plt
+import copy
 import torch
 from torchvision import datasets, transforms
 from torch.utils.data import Subset
@@ -71,6 +72,8 @@ class UnlearnDatasetSplit:
 
             val_idxs = np.random.choice(len(train_set), int(len(train_set) * 0.1), replace=False)
             train_idxs = list(set(range(len(train_set))) - set(val_idxs))
+
+            valid = copy.deepcopy(train_set)
 
             valid.data = train_set.data[val_idxs]
             valid.targets = train_set.targets[val_idxs]
