@@ -70,7 +70,7 @@ class UnlearnDatasetSplit:
             test = datasets.CIFAR10(self.dataset_path, train=False, transform=transform, download=True)
 
             val_idxs = np.random.choice(len(train_set), int(len(train_set) * 0.1), replace=False)
-            train_idxs = list(set(range(len(train))) - set(val_idxs))
+            train_idxs = list(set(range(len(train_set))) - set(val_idxs))
 
             valid.data = train_set.data[val_idxs]
             valid.targets = train_set.targets[val_idxs]
