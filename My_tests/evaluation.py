@@ -86,7 +86,7 @@ class EvaluationStats():
 
         if not isinstance(method, list):
             if not isinstance(method, str):
-                print(f"\033[31mInvalid method\r\n Please pick between {methods}!\033[0m")
+                print(f"\033[31mInvalid method\r\n Please pick between {cls.methods}!\033[0m")
         
         for m in method:
             if m == "UnlearnAccuracy":
@@ -132,7 +132,7 @@ class EvaluationStats():
                 return None
 
             else:
-                print(f"\033[31mInvalid method\r\n Please pick between {methods}!\033[0m")
+                print(f"\033[31mInvalid method\r\n Please pick between {cls.methods}!\033[0m")
                 return None
     
         return self.stats
