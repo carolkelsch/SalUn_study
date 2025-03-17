@@ -216,8 +216,11 @@ class EvaluationStats():
             f"Accuracy {top1[i]:.3f} ({np.mean(top1):.3f})")
 
             print(f"Accuracy {np.mean(top1):.3f}")
-
-        self.stats = {metric: np.mean(top1)}
+        
+        if metric == "UnlearnAccuracy":
+            self.stats = {metric: (1 - np.mean(top1))}
+        else:
+            self.stats = {metric: np.mean(top1)}
 
     def compute_metric(self, method):
 
