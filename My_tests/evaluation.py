@@ -111,11 +111,11 @@ class EvaluationStats():
 
 
         def SVC_MIA(shadow_train, target_train, target_test, shadow_test):
-            shadow_train_prob, shadow_train_labels = collect_prob(shadow_train, self.model)
-            shadow_test_prob, shadow_test_labels = collect_prob(shadow_test, self.model)
+            shadow_train_prob, shadow_train_labels = collect_prob(shadow_train)
+            shadow_test_prob, shadow_test_labels = collect_prob(shadow_test)
 
-            target_train_prob, target_train_labels = collect_prob(target_train, self.model)
-            target_test_prob, target_test_labels = collect_prob(target_test, self.model)
+            target_train_prob, target_train_labels = collect_prob(target_train)
+            target_test_prob, target_test_labels = collect_prob(target_test)
 
             shadow_train_corr = (
                 torch.argmax(shadow_train_prob, axis=1) == shadow_train_labels
@@ -188,6 +188,8 @@ class EvaluationStats():
     def compute_acc(self, metric, loader):
         losses = np.zeros_like(len(loader))
         top1 = np.zeros_like(len(loader))
+        
+        criterion = torch.nn.CrossEntropyLoss()
 
         # switch to evaluate mode
         self.model.eval()
