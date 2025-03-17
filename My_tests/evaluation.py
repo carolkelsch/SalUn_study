@@ -8,11 +8,11 @@ from torchmetrics.multimodal.clip_score import CLIPScore
 
 class EvaluationStats():
 
-    def __init__(self, model, data_loders, method=None):
+    def __init__(self, model, data_loaders, method=None):
         self.methods = ["UnlearnAccuracy", "RemainingAccuracy", "TestingAccuracy", "CLIP-Score", "FID", "MIA", "RunTimeEfficiency"]
 
         self.model = model
-        self.data_loders = data_loders
+        self.data_loaders = data_loaders
         self.stats = {}
 
         if method != None:
@@ -84,12 +84,12 @@ class EvaluationStats():
 
     def compute_metric(self, method):
 
-        print(method)
-        print(type(method))
-
         if not isinstance(method, list):
             if not isinstance(method, str):
                 print(f"\033[31mInvalid method\r\n Please pick between {self.methods}!\033[0m")
+        
+        if isinstance(method, str):
+            method = [method]
         
         for m in method:
             if m == "UnlearnAccuracy":
