@@ -84,6 +84,9 @@ class EvaluationStats():
 
     def compute_metric(self, method):
 
+        print(method)
+        print(type(method))
+
         if not isinstance(method, list):
             if not isinstance(method, str):
                 print(f"\033[31mInvalid method\r\n Please pick between {self.methods}!\033[0m")
