@@ -1,27 +1,28 @@
 import numpy as np 
 import matplotlib as plt
 import torch
-from FromSalUn import *
+from FromSalUn import SVC_MIA
 from torchmetrics.multimodal.clip_score import CLIPScore
 
 
 
 class EvaluationStats():
 
-    methods = ["UnlearnAccuracy", "RemainingAccuracy", "TestingAccuracy", "CLIP-Score", "FID", "RunTimeEfficiency"]
+    methods = ["UnlearnAccuracy", "RemainingAccuracy", "TestingAccuracy", "CLIP-Score", "FID", "MIA", "RunTimeEfficiency"]
 
     def __init__(self, model, data_loders, method=None):
         self.model = model
         self.data_loders = data_loders
         self.stats = {}
-        if method != None:
-            compute_acc(method)
 
-    def get_acc():
+        if method != None:
+            compute_metric(method)
+
+    def get_acc(self):
         return self.stats
     
     '''From SalUn'''
-    def accuracy(output, target, topk=(1,)):
+    def accuracy(self, output, target, topk=(1,)):
         """Computes the precision@k for the specified values of k"""
         maxk = max(topk)
         batch_size = target.size(0)
@@ -37,22 +38,18 @@ class EvaluationStats():
         return res
     
     '''From SalUn'''
-    def MIA(metric):
-        shadow_train = torch.utils.data.Subset(self.data_loader["retain"], list(range(len(self.data_loader["test"]))))
-        shadow_train_loader = torch.utils.data.DataLoader(
-            shadow_train, batch_size=args.batch_size, shuffle=False
-        )
+    def MIA(self, metric):
 
         self.stats = {metric: SVC_MIA(
-            shadow_train=shadow_train_loader,
-            shadow_test=self.data_loader["test"],
+            shadow_train=self.data_loaders["train_retain_mia"],
+            shadow_test=self.data_loaders["test_retain"],
             target_train=None,
-            target_test=self.data_loader["forget"],
+            target_test=self.data_loaders["train_forget"],
             model=model,
             )
         }
 
-    def compute_acc(metric, loader):
+    def compute_acc(self, metric, loader):
         losses = np.zeros_like(len(loader))
         top1 = np.zeros_like(len(loader))
 
@@ -85,7 +82,7 @@ class EvaluationStats():
 
         self.stats = {metric: np.mean(top1)}
 
-    def compute_metric(method):
+    def compute_metric(self, method):
 
         if not isinstance(method, list):
             if not isinstance(method, str):
@@ -105,8 +102,17 @@ class EvaluationStats():
                     compute_acc(m, self.data_loders["test"])
 
             elif m == "MIA":
-                if "forget" in self.data_loders and self.data_loaders["forget"] is not None:
-                    MIA("MIA")
+                if np.isin(np.array(['train_retain_mia', 'test_retain', 'train_forget']), np.array(list(self.data_loaders.keys()))).sum() != 3:
+                    print(f"\033[31mCould not find the necessary data loaders for MIA computation.\r\n Please provide 'train_retain_mia', 'test_retain' and 'train_forget'!\033[0m")
+                    return None
+                
+                if self.data_loaders["train_retain_mia"] is None or self.data_loaders["test_retain"] is None or self.data_loaders["train_forget"] is None:
+                    print(f"\033[31mCheck data loaders for MIA computation.\r\n It seems like 'train_retain_mia' or 'test_retain' or 'train_forget' are empty!\033[0m")
+                    return None
+
+                else:
+                    MIA(m)
+
 
             elif m == "RunTimeEfficiency":
                 # TODO: check how to implement run time efficiency, probably in the implementation of the unlearning method

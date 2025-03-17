@@ -9,7 +9,7 @@ import pickle
 class UnlearnDatasetSplit:
 
     available_datasets = ["cifar-10", "coco"]
-    possible_splits = ["Train", "Valid", "Test", "Train_retain", "Train_forget", "Test_retain", "Test_forget"]
+    possible_splits = ["Train", "Valid", "Test", "Train_retain", "Train_retain_MIA", "Train_forget", "Test_retain", "Test_forget"]
 
     def __init__(self, path: str, dataset: str):
         self.dataset_path = path
@@ -109,6 +109,13 @@ class UnlearnDatasetSplit:
             print(f"\033[31mCould not load {k}, check if dataset exists!\033[0m")
             return None
         return loader
+    
+    def get_splits(self):
+        if self.dataset_splits is not None:
+            return self.dataset_splits
+        else:
+            print('Datasets were not splitted.')
+            return None
 
     def split_dataset(self, mode: str, save: False, **kwargs):
 
@@ -186,6 +193,10 @@ class UnlearnDatasetSplit:
                 test_f_idx = test_idx[testf_mask]
                 test_r_idx = test_idx[~testf_mask]
 
+                # create train retain with the same size as test retain for MIA evaluation
+                idxs_mia = np.random.choice(train_r_idx, len(test_r_idx), replace=False)
+
+
                 train_retain = Subset(self.dataset_splits["Train"], train_r_idx)
                 train_forget = Subset(self.dataset_splits["Train"], train_f_idx)
 
@@ -195,7 +206,9 @@ class UnlearnDatasetSplit:
                 test_retain = Subset(self.dataset_splits["Test"], test_r_idx)
                 test_forget = Subset(self.dataset_splits["Test"], test_f_idx)
 
-                new_splits =  {"Train_retain": train_retain, "Train_forget": train_forget, "Valid_retain": valid_retain, "Valid_forget": valid_forget, "Test_retain": test_retain, "Test_forget": test_forget}
+                train_retain_mia = Subset(self.dataset_splits["Train"], idxs_mia)
+
+                new_splits =  {"Train_retain": train_retain, "Train_retain_MIA": train_retain_mia,  "Train_forget": train_forget, "Valid_retain": valid_retain, "Valid_forget": valid_forget, "Test_retain": test_retain, "Test_forget": test_forget}
 
                 self.dataset_splits.update(new_splits)
 
