@@ -55,23 +55,23 @@ class EvaluationStats():
             return -torch.sum(modified_probs * modified_log_probs, dim=dim, keepdim=keepdim)
 
 
-        def collect_prob(data_loader, model):
+        def collect_prob(data_loader):
             if data_loader is None:
                 return torch.zeros([0, 10]), torch.zeros([0])
 
             prob = []
             targets = []
 
-            model.eval()
+            self.model.eval()
             with torch.no_grad():
                 for batch in data_loader:
                     try:
-                        batch = [tensor.to(next(model.parameters()).device) for tensor in batch]
+                        batch = [tensor.to(next(self.model.parameters()).device) for tensor in batch]
                         data, target = batch
                     except:
                         print("UnknownErrorrrr")
                     with torch.no_grad():
-                        output = model(data)
+                        output = self.model(data)
                         prob.append(F.softmax(output, dim=-1).data)
                         targets.append(target)
 
@@ -110,12 +110,12 @@ class EvaluationStats():
             return np.mean(accs)
 
 
-        def SVC_MIA(shadow_train, target_train, target_test, shadow_test, model):
-            shadow_train_prob, shadow_train_labels = collect_prob(shadow_train, model)
-            shadow_test_prob, shadow_test_labels = collect_prob(shadow_test, model)
+        def SVC_MIA(shadow_train, target_train, target_test, shadow_test):
+            shadow_train_prob, shadow_train_labels = collect_prob(shadow_train, self.model)
+            shadow_test_prob, shadow_test_labels = collect_prob(shadow_test, self.model)
 
-            target_train_prob, target_train_labels = collect_prob(target_train, model)
-            target_test_prob, target_test_labels = collect_prob(target_test, model)
+            target_train_prob, target_train_labels = collect_prob(target_train, self.model)
+            target_test_prob, target_test_labels = collect_prob(target_test, self.model)
 
             shadow_train_corr = (
                 torch.argmax(shadow_train_prob, axis=1) == shadow_train_labels
@@ -167,7 +167,7 @@ class EvaluationStats():
             acc_prob = SVC_fit_predict(
                 shadow_train_prob, shadow_test_prob, target_train_prob, target_test_prob
             )
-            m = {
+            metricstats = {
                 "correctness": acc_corr,
                 "confidence": acc_conf,
                 "entropy": acc_entr,
@@ -175,14 +175,13 @@ class EvaluationStats():
                 "prob": acc_prob,
             }
             
-            return m
+            return metricstats
 
         self.stats = {metric: SVC_MIA(
             shadow_train=self.data_loaders["train_retain_mia"],
             shadow_test=self.data_loaders["test_retain"],
             target_train=None,
-            target_test=self.data_loaders["train_forget"],
-            model=self.model,
+            target_test=self.data_loaders["train_forget"]
             )
         }
 
@@ -200,7 +199,7 @@ class EvaluationStats():
             target = target.cuda()
 
             with torch.no_grad():
-                output = model(image)
+                output = self.model(image)
                 loss = criterion(output, target)
 
             output = output.float()
