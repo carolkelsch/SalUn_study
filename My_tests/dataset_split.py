@@ -8,10 +8,12 @@ import pickle
 
 class UnlearnDatasetSplit:
 
-    available_datasets = ["cifar-10", "coco"]
-    possible_splits = ["Train", "Valid", "Test", "Train_retain", "Train_retain_MIA", "Train_forget", "Test_retain", "Test_forget"]
-
     def __init__(self, path: str, dataset: str):
+
+        self.available_datasets = ["cifar-10", "coco"]
+        self.possible_splits = ["Train", "Valid", "Test", "Train_retain", "Train_retain_MIA", "Train_forget", "Test_retain", "Test_forget"]
+
+
         self.dataset_path = path
         self.dataset_splits = {}
         self.classes = None
@@ -58,7 +60,7 @@ class UnlearnDatasetSplit:
     def get_dataset(self, dataset: str):
 
         if isinstance(dataset, list) or not isinstance(dataset, str):
-            print(f"\033[31mInvalid dataset\r\n Please pick between {cls.available_datasets}!\033[0m")
+            print(f"\033[31mInvalid dataset\r\n Please pick between {self.available_datasets}!\033[0m")
             return None
         
         if dataset == "cifar10":
@@ -99,7 +101,7 @@ class UnlearnDatasetSplit:
             print('not implemented yet')
 
         else:
-            print(f"\033[31mInvalid method\r\n Please pick between {cls.available_datasets}!\033[0m")
+            print(f"\033[31mInvalid method\r\n Please pick between {self.available_datasets}!\033[0m")
     
     def get_loader(self, k, batchsize: int, shuffle: bool = True, num_workers: int = 0, pin_memory: bool = True):
 
