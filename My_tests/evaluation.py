@@ -16,10 +16,7 @@ class EvaluationStats():
         self.stats = {}
 
         if method != None:
-            compute_metric(method)
-
-    def get_acc(self):
-        return self.stats
+            self.compute_metric(method)
     
     '''From SalUn'''
     def accuracy(self, output, target, topk=(1,)):
@@ -45,7 +42,7 @@ class EvaluationStats():
             shadow_test=self.data_loaders["test_retain"],
             target_train=None,
             target_test=self.data_loaders["train_forget"],
-            model=model,
+            model=self.model,
             )
         }
 
@@ -69,7 +66,7 @@ class EvaluationStats():
             output = output.float()
             loss = loss.float()
 
-            prec1 = accuracy(output.data, target)[0]
+            prec1 = self.accuracy(output.data, target)[0]
             losses[i] = loss.item()
             top1[i] = prec1.item()
 
@@ -94,15 +91,15 @@ class EvaluationStats():
         for m in method:
             if m == "UnlearnAccuracy":
                 if "forget" in self.data_loders and self.data_loaders["forget"] is not None:
-                    compute_acc(m, self.data_loders["forget"])
+                    self.compute_acc(m, self.data_loders["forget"])
 
             elif m == "RemainingAccuracy":
                 if "retain" in self.data_loders and self.data_loaders["retain"] is not None:
-                    compute_acc(m, self.data_loders["retain"])
+                    self.compute_acc(m, self.data_loders["retain"])
 
             elif m == "TestingAccuracy":
                 if "test" in self.data_loders and self.data_loaders["test"] is not None:
-                    compute_acc(m, self.data_loders["test"])
+                    self.compute_acc(m, self.data_loders["test"])
 
             elif m == "MIA":
                 if np.isin(np.array(['train_retain_mia', 'test_retain', 'train_forget']), np.array(list(self.data_loaders.keys()))).sum() != 3:
@@ -114,7 +111,7 @@ class EvaluationStats():
                     return None
 
                 else:
-                    MIA(m)
+                    self.MIA(m)
 
 
             elif m == "RunTimeEfficiency":
