@@ -212,7 +212,7 @@ class EvaluationStats():
             top1[i] = prec1.item()
 
             print(f"Test: [{i}/{len(loader)}]\t" + 
-            f"Loss {loss[i]:.4f} ({np.mean(loss):.4f})\t" +
+            f"Loss {losses[i]:.4f} ({np.mean(losses):.4f})\t" +
             f"Accuracy {top1[i]:.3f} ({np.mean(top1):.3f})")
 
             print(f"Accuracy {np.mean(top1):.3f}")
