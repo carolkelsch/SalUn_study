@@ -211,10 +211,9 @@ class EvaluationStats():
             losses[i] = loss.item()
             top1[i] = prec1.item()
 
-            if i % args.print_freq == 0:
-                print(f"Test: [{i}/{len(loader)}]\t" + 
-                f"Loss {loss[i]:.4f} ({np.mean(loss):.4f})\t" +
-                f"Accuracy {top1[i]:.3f} ({np.mean(top1):.3f})")
+            print(f"Test: [{i}/{len(loader)}]\t" + 
+            f"Loss {loss[i]:.4f} ({np.mean(loss):.4f})\t" +
+            f"Accuracy {top1[i]:.3f} ({np.mean(top1):.3f})")
 
             print(f"Accuracy {np.mean(top1):.3f}")
 
