@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
-from imagenet import get_x_y_from_data_dict
 from sklearn.svm import SVC
 
 
@@ -36,12 +35,7 @@ def collect_prob(data_loader, model):
                 batch = [tensor.to(next(model.parameters()).device) for tensor in batch]
                 data, target = batch
             except:
-                device = (
-                    torch.device("cuda:0")
-                    if torch.cuda.is_available()
-                    else torch.device("cpu")
-                )
-                data, target = get_x_y_from_data_dict(batch, device)
+                print("UnknownErrorrrr")
             with torch.no_grad():
                 output = model(data)
                 prob.append(F.softmax(output, dim=-1).data)
