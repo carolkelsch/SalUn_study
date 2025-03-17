@@ -186,9 +186,8 @@ class EvaluationStats():
         }
 
     def compute_acc(self, metric, loader):
-        print(len(loader))
-        losses = np.zeros_like(len(loader))
-        top1 = np.zeros_like(len(loader))
+        losses = np.zeros(len(loader))
+        top1 = np.zeros(len(loader))
         
         criterion = torch.nn.CrossEntropyLoss()
 
@@ -209,7 +208,6 @@ class EvaluationStats():
             loss = loss.float()
 
             prec1 = self.accuracy(output.data, target)[0]
-            print(i)
             losses[i] = loss.item()
             top1[i] = prec1.item()
 
